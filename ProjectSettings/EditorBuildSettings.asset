@@ -8,12 +8,18 @@ EditorBuildSettings:
   - enabled: 0
     path: 
     guid: 00000000000000000000000000000000
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/BlackJackScene.unity
     guid: 5aee28d52ce53a44982c0bf3362957c7
   - enabled: 0
     path: Assets/Scenes/WindowsVersionScene.unity
     guid: e373cce1cb98c1344bc1ca550784c1fe
+  - enabled: 1
+    path: Assets/Scenes/AndroidVersionScene.unity
+    guid: 2c7a87b6d5ec7b74394d79d87d4ae758
+  - enabled: 0
+    path: Assets/Scenes/ARAndroidVersionScene.unity
+    guid: f91950fabdf9e104a898303d8f845c06
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: 3bb9d5c0c1e763440bf2142d34083b98, type: 2}
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: 583a9e2917cdd504c9da7d1e68fbc69b, type: 2}

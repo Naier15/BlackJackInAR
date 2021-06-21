@@ -5,11 +5,19 @@ using UnityEngine.UI;
 
 public class GameRule : MonoBehaviour
 {
+    public enum StatusGame
+	{
+        IN_GAME, START_GAME, END_GAME
+	};
+
+    public static StatusGame statusGame;
+
     public bool started;
     public List<GameObject> chips = new List<GameObject>();
     public GameObject StartBtn;
     public GameObject preview;
     public bool inGame;
+    public int totalScore;
 
     private List<GameObject> prevStack;
     private List<GameObject> stack = new List<GameObject>();
@@ -26,6 +34,10 @@ public class GameRule : MonoBehaviour
     private GameObject restart;
     private bool win = false;
     private bool lose = false;
+    private static GameObject score;
+
+    public AudioClip touchSound;
+	private new AudioSource audio;
 
     public GameObject d2;
     public GameObject d3;
@@ -89,6 +101,10 @@ public class GameRule : MonoBehaviour
         myScore = GameObject.Find("MyScore").GetComponent<Text>();
         MonicaScore = GameObject.Find("MonicaScore").GetComponent<Text>();
         preview = GameObject.Find("Preview");
+        GameObject gg = new GameObject();
+        audio = gg.AddComponent<AudioSource>();
+
+        score  = GameObject.Find("Score");
 
 
         started = false;
@@ -101,6 +117,7 @@ public class GameRule : MonoBehaviour
         // Количество карт в игре - 7 колод по 52 карты
         for (int i = 0; i < 7; ++i)
 		{
+            //stack.AddRange(prevStack);
             foreach (var elem in prevStack)
             {
                 stack.Add(elem);
@@ -117,11 +134,17 @@ public class GameRule : MonoBehaviour
         restart.GetComponent<Button>().onClick.AddListener(RestartScene);
         restart.SetActive(false);
         inGame = true;
+        statusGame = StatusGame.IN_GAME;
     }
 
     // Update is called once per frame
     void Update()
     {
+        if ((Input.touchCount > 0 && Input.touches[0].phase == TouchPhase.Began) || Input.GetMouseButtonDown(0))
+		{
+            audio.PlayOneShot(touchSound);
+        }
+
         if (started)
         {
             var rnd = new System.Random();
@@ -306,7 +329,7 @@ public class GameRule : MonoBehaviour
         q = -6;
         win = false;
         lose = false;
-}
+    }
 
 
      void MonicaTakes()
@@ -322,6 +345,13 @@ public class GameRule : MonoBehaviour
         // Карта из общего стека карт переходит в стек Моники
         monicaStack.Add(obj);
         stack.RemoveAt(i);
+    }
+
+
+    public void ChangeScore(int value)
+	{
+        totalScore += value;
+		score.GetComponent<Text>().text = $"Ставка: {totalScore}";
     }
 
 
@@ -349,7 +379,7 @@ public class GameRule : MonoBehaviour
     IEnumerator RotateCard()
 	{
         rotatedCard.GetComponent<Rigidbody>().AddForce(new Vector3(0, 60.0f, 0));
-        rotatedCard.GetComponent<Rigidbody>().angularVelocity += new Vector3(330.0f, 0.0f, 0.0f) * Time.deltaTime;
+        rotatedCard.GetComponent<Rigidbody>().angularVelocity += new Vector3(80.0f, 0.0f, 0.0f) * Time.deltaTime;
         yield return new WaitForSeconds(2);
         yield break;
     }

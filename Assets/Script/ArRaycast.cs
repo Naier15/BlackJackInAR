@@ -41,9 +41,10 @@ public class ArRaycast : MonoBehaviour
             planeMarker.transform.position = hits[0].pose.position;
             planeMarker.SetActive(true);
 
-            Touch touch = Input.GetTouch(0);
-            touchPosition = touch.position;
+            
         }
+        Touch touch = Input.GetTouch(0);
+        touchPosition = touch.position;
 
         if (Input.touchCount > 0 && Input.touches[0].phase == TouchPhase.Began)
         {

@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 23178517178245426}
   - component: {fileID: 54759169827577584}
   - component: {fileID: 65975022955384788}
+  - component: {fileID: 6417313519562303868}
   m_Layer: 0
   m_Name: BlackChip
   m_TagString: Untagged
@@ -113,3 +114,17 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.019999998, y: 0.019999994, z: 0.0086469}
   m_Center: {x: -4.6566126e-10, y: 0, z: 0}
+--- !u!114 &6417313519562303868
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1603140108674200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6694171de16561a4783896215ec17eaa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  distance: 15
+  type: 2
