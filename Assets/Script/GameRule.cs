@@ -7,16 +7,14 @@ public class GameRule : MonoBehaviour
 {
     public enum StatusGame
 	{
-        IN_GAME, START_GAME, END_GAME
+        START_GAME, IN_GAME, END_GAME
 	};
 
-    public static StatusGame statusGame;
+    public StatusGame statusGame;
 
-    public bool started;
-    public List<GameObject> chips = new List<GameObject>();
+    public List<GameObject> chipsInBlueZone = new List<GameObject>();
     public GameObject StartBtn;
     public GameObject preview;
-    public bool inGame;
     public int totalScore;
 
     private List<GameObject> prevStack;
@@ -32,8 +30,8 @@ public class GameRule : MonoBehaviour
     private Button take; 
     private Button stop;
     private GameObject restart;
-    private bool win = false;
-    private bool lose = false;
+    private bool totalWin = false;
+    private bool totalLose = false;
     private static GameObject score;
 
     public AudioClip touchSound;
@@ -97,17 +95,18 @@ public class GameRule : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        totalScore = 0;
         StartBtn = GameObject.Find("StartButton");
         myScore = GameObject.Find("MyScore").GetComponent<Text>();
         MonicaScore = GameObject.Find("MonicaScore").GetComponent<Text>();
         preview = GameObject.Find("Preview");
-        GameObject gg = new GameObject();
-        audio = gg.AddComponent<AudioSource>();
+        audio = gameObject.AddComponent<AudioSource>();
 
         score  = GameObject.Find("Score");
 
 
-        started = false;
+        statusGame = StatusGame.START_GAME;
+
         prevStack = new List<GameObject>() { 
             d2, d3, d4, d5, d6, d7, d8, d9, d10, dJ, dQ, dK, dA, 
             c2, c3, c4, c5, c6, c7, c8, c9, c10, cJ, cQ, cK, cA,
@@ -116,13 +115,7 @@ public class GameRule : MonoBehaviour
 
         // Количество карт в игре - 7 колод по 52 карты
         for (int i = 0; i < 7; ++i)
-		{
-            //stack.AddRange(prevStack);
-            foreach (var elem in prevStack)
-            {
-                stack.Add(elem);
-            }
-        }
+            stack.AddRange(prevStack);
 
         take = GameObject.Find("Take").GetComponent<Button>();
         take.onClick.AddListener(TakeOne);
@@ -133,8 +126,6 @@ public class GameRule : MonoBehaviour
         restart = GameObject.Find("Restart");
         restart.GetComponent<Button>().onClick.AddListener(RestartScene);
         restart.SetActive(false);
-        inGame = true;
-        statusGame = StatusGame.IN_GAME;
     }
 
     // Update is called once per frame
@@ -145,10 +136,10 @@ public class GameRule : MonoBehaviour
             audio.PlayOneShot(touchSound);
         }
 
-        if (started)
+        if (statusGame == StatusGame.IN_GAME)
         {
             var rnd = new System.Random();
-            GameObject obj;
+            GameObject card;
 
             // Первая карта Моники не будет перевернута по оси z
             float zz = 0.0f;
@@ -159,11 +150,11 @@ public class GameRule : MonoBehaviour
 			{
                 i = rnd.Next(0, stack.Count-1);
                 stack[i].transform.localScale = new Vector3(400.0f, 400.0f, 400.0f);
-                obj = Instantiate(stack[i], new Vector3(7, 36, j), Quaternion.Euler(0.0f, 90.0f, 180.0f));
+                card = Instantiate(stack[i], new Vector3(7, 36, j), Quaternion.Euler(0.0f, 90.0f, 180.0f));
                 j += 6;
 
                 // Карта из общего стека карт переходит в стек игрока
-                myStack.Add(obj);
+                myStack.Add(card);
                 stack.RemoveAt(i);
             }
 
@@ -172,21 +163,21 @@ public class GameRule : MonoBehaviour
             {
                 i = rnd.Next(0, stack.Count-1);
                 stack[i].transform.localScale = new Vector3(400.0f, 400.0f, 400.0f);
-                obj = Instantiate(stack[i], new Vector3(-3, 36, q), Quaternion.Euler(0.0f, 90.0f, zz));
+                card = Instantiate(stack[i], new Vector3(-3, 36, q), Quaternion.Euler(0.0f, 90.0f, zz));
 
                 // Запоминаем вниз лежащую карту Моники
                 if (k == 0)
-                    rotatedCard = obj;
+                    rotatedCard = card;
 
                 // Карта из общего стека карт переходит в стек Моники
-                monicaStack.Add(obj);
+                monicaStack.Add(card);
                 stack.RemoveAt(i);
 
                 q += 6;
                 zz = 180.0f;
             }
             // Окончание старта игры
-            started = false;
+            statusGame = StatusGame.END_GAME;
         }
     }
 
@@ -212,18 +203,15 @@ public class GameRule : MonoBehaviour
         int myResult = Calculate(myStack);
         int monicaResult;
 
-        //Фишки становятся недоступны
-        inGame = false;
-
         // Проверка на досрочную победу или поражение
         if (myResult == 21)
 		{
-            win = true;
+            totalWin = true;
             StartCoroutine(CompareResult(0, myResult));
         }
         else if (myResult > 21)
 		{
-            lose = true;
+            totalLose = true;
             StartCoroutine(CompareResult(0, myResult));
         }
         else
@@ -308,27 +296,17 @@ public class GameRule : MonoBehaviour
 		{
             stack = new List<GameObject>();
             for (int i = 0; i < 7; ++i)
-            {
-                foreach (var elem in prevStack)
-                {
-                    stack.Add(elem);
-                }
-            }
+                stack.AddRange(prevStack);
         }
 
-        started = false;
         StartBtn.GetComponent<StartToPlay>().StartButton.SetActive(true);
         StartBtn.GetComponent<Button>().onClick.AddListener(StartBtn.GetComponent<StartToPlay>().TaskOnClick);
         preview.SetActive(true);
 
-        //Фишки вновь доступны
-        inGame = true;
-        
-
         j = -6;
         q = -6;
-        win = false;
-        lose = false;
+        totalWin = false;
+        totalLose = false;
     }
 
 
@@ -353,8 +331,6 @@ public class GameRule : MonoBehaviour
         totalScore += value;
 		score.GetComponent<Text>().text = $"Ставка: {totalScore}";
     }
-
-
 
     // Моника берет еще одну карту
     IEnumerator AddCardToMonica()
@@ -388,15 +364,15 @@ public class GameRule : MonoBehaviour
     IEnumerator CompareResult(int Monica, int me)
 	{
         yield return new WaitForSeconds(1);
-        if ((win || Monica <= me && me <= 21 || Monica > 21 && me <= 21) && !lose)
+        foreach (var elem in chipsInBlueZone)
         {
-            int times = Monica != me ? 2 : 1;
-            foreach (var elem in chips)
+            Destroy(elem);
+        }
+        if ((totalWin || Monica <= me && me <= 21 || Monica > 21 && me <= 21) && !totalLose)
+        {
+            foreach (var elem in chipsInBlueZone)
             {
-                Destroy(elem);
-            }
-            foreach (var elem in chips)
-            {
+                int times = Monica != me ? 2 : 1;
                 Vector3 pos = new Vector3();
                 if (elem.name.StartsWith("GreenChip"))
                 {
@@ -416,21 +392,11 @@ public class GameRule : MonoBehaviour
                     GameObject chip = Instantiate(elem.gameObject, pos, Quaternion.Euler(90.0f, 0.0f, float.Parse(v.ToString())));
                     chip.AddComponent<Chip>();
                 }
-                times = Monica != me ? 2 : 1;
             }
-            chips = new List<GameObject>();
-            myScore.text = me.ToString();
-            MonicaScore.text = Monica.ToString();
-        } else 
-		{
-            foreach (var elem in chips)
-            {
-                Destroy(elem);
-            }
-            chips = new List<GameObject>();
-            myScore.text = me.ToString();
-            MonicaScore.text = Monica.ToString();
         }
+        chipsInBlueZone = new List<GameObject>();
+        myScore.text = me.ToString();
+        MonicaScore.text = Monica.ToString();
         yield break;
     }
 

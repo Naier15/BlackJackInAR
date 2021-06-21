@@ -1,7 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class Chip : MonoBehaviour
 {
@@ -10,12 +8,8 @@ public class Chip : MonoBehaviour
         RED, GREEN, BLACK
 	};
 
-    private Touch touch;
-    private float tempPos;
+    private float tempPosComp;
     private float tempPosAndr;
-    private bool bet = false;
-    private Text score;
-    private string objName;
     private GameRule GameRule;
     private int cost;
 
@@ -33,18 +27,14 @@ public class Chip : MonoBehaviour
             cost = 20;
     }
 
-
     void Update()
     {
-        bool inGame = GameRule.inGame;
-
         // Ввод с android
         if ((Input.touchCount > 0) && (Input.touches[0].phase == TouchPhase.Began))
 		{
-            touch = Input.GetTouch(0);
+            Touch touch = Input.GetTouch(0);
             Ray ray = Camera.main.ScreenPointToRay(Input.touches[0].position);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit))
+            if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 if (hit.collider.name.Contains("Chip"))
                 {
@@ -56,19 +46,8 @@ public class Chip : MonoBehaviour
                         Vector3 objPositionAndr = Camera.main.ScreenToWorldPoint(new Vector3(touch.position.x, touch.position.y, distance));
 
                         if (objPositionAndr.y > tempPosAndr)
-                        {
-                            objPositionAndr.x -= (objPositionAndr.y - tempPos) * 3.0f;
-                        }
+                            objPositionAndr.x -= (objPositionAndr.y - tempPosAndr) * 3.0f;
 
-                        Touch touch2 = Input.GetTouch(1);
-                        
-                        Vector2 tappedPos;
-                        if ((Input.touchCount > 1) && (Input.touches[1].phase == TouchPhase.Moved))
-                        {
-                            tappedPos = touch2.position;
-                            float dist = Vector2.Distance(touch2.position, tappedPos);
-                            hit.collider.GetComponent<Rigidbody>().angularVelocity += new Vector3(0.0f, 0.0f, dist) * Time.deltaTime;
-                        }
                         hit.collider.transform.position = objPositionAndr;
                     }
                     else if (touch.phase == TouchPhase.Canceled || touch.phase == TouchPhase.Ended)
@@ -78,71 +57,50 @@ public class Chip : MonoBehaviour
                 }
             }
         }
+    }
 
-        
-
-
-
-        // Вносим в счет фишки, лежащие в синей зоне
-        if (inGame && !bet && 14 < transform.position.x && transform.position.x < 24 && -13 < transform.position.z && transform.position.z < -4)
-        {
-            List<GameObject> chips = GameObject.Find("BlackJackScene").GetComponent<GameRule>().chips;
-            
-            bet = true;
-
-            chips.Add(gameObject);
-            GameRule.ChangeScore(cost);
-        } 
-
-        // Выносим из счета забранные из синей зоны фишки
-        if (inGame && bet && !(14 < transform.position.x && transform.position.x < 24 && -13 < transform.position.z && transform.position.z < -4))
+	private void OnTriggerEnter(Collider other)
+	{
+        if (other.gameObject.CompareTag("BetPlatform"))
 		{
-            List<GameObject> chips = GameObject.Find("BlackJackScene").GetComponent<GameRule>().chips;
-            
-            bet = false;
-            chips.Remove(gameObject);
+            if (GameRule.statusGame == GameRule.StatusGame.START_GAME || GameRule.statusGame == GameRule.StatusGame.IN_GAME)
+			{
+                GameRule.chipsInBlueZone.Add(gameObject);
+                GameRule.ChangeScore(cost);
+			}
+        }    
+    }
 
-            //Смена очков в общей ставке
-			GameRule.ChangeScore(-cost);
-        }
-
-
-        /*if (Physics.Raycast(transform.position, new Vector3(0, -1, 0), out var hit, 5.0f) && !bet)
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.CompareTag("BetPlatform"))
         {
-            if (hit.collider.name == "BetPlatform")
+            if (GameRule.statusGame == GameRule.StatusGame.START_GAME || GameRule.statusGame == GameRule.StatusGame.IN_GAME)
             {
-                Debug.Log($"----- {transform.position} {transform.position - transform.up} {hit.collider.transform.position}");
-                bet = true;
+                GameRule.chipsInBlueZone.Remove(gameObject);
+                GameRule.ChangeScore(-cost);
             }
-        }*/
-
-        //touch = Input.GetTouch(0);
-        //transform.position = new Vector3(touch.position.x, touch.position.y, transform.position.z) * Time.deltaTime;
-
-        /*if (Input.touchCount > 0)
-        {
-            go.transform.position = new Vector3(go.transform.position.x, go.transform.position.y + 1.0f, go.transform.position.z);
-        }*/
+        }
     }
 
     private void OnMouseDown()
     {
-        tempPos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, distance)).y;
+        tempPosComp = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, distance)).y;
     }
 
     private void OnMouseDrag()
     {
         GetComponent<Rigidbody>().useGravity = false;
 
-        Vector3 mousePosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, distance);
-        Vector3 objPosition = Camera.main.ScreenToWorldPoint(mousePosition);
+        Vector3 objPosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, distance));
         
-        if (objPosition.y > tempPos)
+        if (objPosition.y > tempPosComp)
         {
-            objPosition.x -= (objPosition.y - tempPos) * 3.0f;
+            objPosition.x -= (objPosition.y - tempPosComp) * 3.0f;
         }
         transform.position = objPosition;
     }
+
     private void OnMouseUp()
     {
         GetComponent<Rigidbody>().useGravity = true;

@@ -9,7 +9,7 @@ public class StartToPlay : MonoBehaviour
     private GameObject Take;
     private GameObject Stop;
     public GameObject prev;
-    public GameObject gr;
+    public GameRule GameRule;
 
     // Start is called before the first frame update
     void Start()
@@ -22,7 +22,7 @@ public class StartToPlay : MonoBehaviour
         Stop = GameObject.Find("Stop");
         Stop.SetActive(false);
         prev = GameObject.Find("Preview");
-        gr = GameObject.Find("BlackJackScene");
+        GameRule = GameObject.Find("BlackJackScene").GetComponent<GameRule>();
     }
 
     // Update is called once per frame
@@ -32,8 +32,7 @@ public class StartToPlay : MonoBehaviour
 
     public void TaskOnClick()
     {
-        string score = GameObject.Find("Score").GetComponent<Text>().text;
-        if (int.Parse(score.Split(new char[] { ' ' })[1]) > 0)
+        if (GameRule.totalScore > 0)
         {
             StartButton.SetActive(false);
             
@@ -42,21 +41,10 @@ public class StartToPlay : MonoBehaviour
                 prev.SetActive(false);
             }
             
-
             Take.SetActive(true);
             Stop.SetActive(true);
 
-            gr.GetComponent<GameRule>().started = true;
+            GameRule.statusGame += 1;
         }
     }
-
-
-    /*if (Input.touches.Length > 0 && Input.touches[0].phase == TouchPhase.Began) {
-    RaycastHit hit;
-    Ray ray = Camera.main.ScreenPointToRay(Input.touches[0].position);
-
-    if (Physics.Raycast(ray, out hit, float.MaxValue) && dist <= 58.5f) {
-        hit.SendMessage("OnPress" , SendMessageOptions.DontRequireReceiver);
-    }
-    }*/
 }
