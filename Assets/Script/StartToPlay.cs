@@ -6,12 +6,12 @@ using UnityEngine.UI;
 public class StartToPlay : MonoBehaviour
 {
     public GameObject StartButton;
-    private GameObject Take;
-    private GameObject Stop;
+    public GameObject Take;
+    public GameObject Stop;
     public GameObject prev;
-    public GameRule GameRule;
+    private GameRule GameRule;
 
-    // Start is called before the first frame update
+
     void Start()
     {
         StartButton = GameObject.Find("StartButton");
@@ -19,15 +19,12 @@ public class StartToPlay : MonoBehaviour
 
         Take = GameObject.Find("Take");
         Take.SetActive(false);
+
         Stop = GameObject.Find("Stop");
         Stop.SetActive(false);
+
         prev = GameObject.Find("Preview");
         GameRule = GameObject.Find("BlackJackScene").GetComponent<GameRule>();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
     }
 
     public void TaskOnClick()
@@ -43,8 +40,7 @@ public class StartToPlay : MonoBehaviour
             
             Take.SetActive(true);
             Stop.SetActive(true);
-
-            GameRule.statusGame += 1;
+            GameRule.statusGame = GameRule.StatusGame.IN_GAME;
         }
     }
 }
